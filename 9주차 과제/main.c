@@ -59,41 +59,42 @@ int main(void)
 	int service_time = 0;
 	int service_customer;
 
-	int vip_wait = 0;
-	int vip_customers = 0;
-	int regular_wait = 0;
-	int regular_customers = 0;
+	int vip_wait = 0;			//VIP 대기시간을 저장하는 변수 선언
+	int vip_customers = 0;		//VIP 고객 수를 저장하는 변수 선언
+	int regular_wait = 0;		//일반 고객 대기시간을 저장하는 변수 선언
+	int regular_customers = 0;	//일반 고객 수를 저장하는 변수 선언
 
-	int randValue = 0;
+	int randValue = 0;			//고객이 생성될 때 rand()값을 여러번 활용해야 하므로 변수 선언
 
-	QueueType regular;
-	QueueType Vip;
+	QueueType regular; // 일반 고객 원형큐 선언
+	QueueType Vip;  // VIP 고객 원형큐 선언
 	init_queue(&regular);
 	init_queue(&Vip);
 	srand(time(NULL));
 
 	for (int clock = 0; clock < minutes; clock++) {
 		printf("현재시각=%d\n", clock);
-		randValue = rand() % 10;
+		randValue = rand() % 10;  //랜덤함수로 생성한 값을 저장하여 이후 같은 값을 여러번 사용
 
 		if (randValue < 3) { // 전체 고객 발생 확률: 30%
-
+			
+			//전체 고객에 대해 공통된 부분을 연산
 			element customer;
 			customer.id = total_customers++;
-			customer.arrival_time = clock;
-			customer.service_time = rand() % 3 + 1;  // 고객 업무 소요 시간
+			customer.arrival_time = clock;			// 
+			customer.service_time = rand() % 3 + 1;	// 고객 업무 소요 시간
 			
 
 			if (randValue < 1) { // Vip 고객 발생 확률 : 10%, 나머지 20%는 일반고객 발생
 				enqueue(&Vip, customer);
-				vip_customers++;
+				vip_customers++;  //vip 인원수 증가
 				printf("VIP 고객 %d이 %d분에 들어옵니다. 업무처리시간= %d분\n",
 					customer.id, customer.arrival_time, customer.service_time);
 			}
 
 			else { // 일반 고객 발생 확률 : 20%
 				enqueue(&regular, customer);
-				regular_customers++;
+				regular_customers++;  //일반고객 인원수 증가
 				printf("일반 고객 %d이 %d분에 들어옵니다. 업무처리시간= %d분\n",
 					customer.id, customer.arrival_time, customer.service_time);
 			}
@@ -105,22 +106,22 @@ int main(void)
 		}
 
 		else {
-			if (!is_empty(&Vip)) { //Vip 큐에 대기인원이 있다면 먼저 처리
+			if (!is_empty(&Vip)) { // Vip 큐에 대기인원이 있다면 먼저 처리
 				element customer = dequeue(&Vip);
 				service_customer = customer.id;
 				service_time = customer.service_time;
 				printf("VIP고객 %d이 %d분에 업무 시작, 대기시간은 %d분.\n",
 					customer.id, clock, clock - customer.arrival_time);
-				total_wait += clock - customer.arrival_time;
+				total_wait += clock - customer.arrival_time;  //전체 대기시간과 vip 대기시간에 현재 업무처리를 시작한 고객의 대기시간 추가.
 				vip_wait += clock - customer.arrival_time;
 			}
-			else if (!is_empty(&regular)) {//Vip 큐에 대기인원이 없으며 일반고객 큐에 대기인원이 있다면 처리
+			else if (!is_empty(&regular)) {// Vip 큐에 대기인원이 없으며 일반고객 큐에 대기인원이 있다면 처리
 				element customer = dequeue(&regular);
 				service_customer = customer.id;
 				service_time = customer.service_time;
 				printf("일반고객 %d이 %d분에 업무 시작, 대기시간은 %d분.\n",
 					customer.id, clock, clock - customer.arrival_time);
-				total_wait += clock - customer.arrival_time;
+				total_wait += clock - customer.arrival_time;  //전체 대기시간과 일반고객 대기시간에 현재 업무처리를 시작한 고객의 대기시간 추가.
 				regular_wait += clock - customer.arrival_time;
 			}
 		}
@@ -129,14 +130,14 @@ int main(void)
 	printf("\n");
 	printf("VIP 고객 전체 대기 시간 = %d분 \n", vip_wait);
 	printf("VIP 고객 방문 수 = %d명 \n",vip_customers);
-	printf("VIP 고객 평균 대기 시간 = %d분 \n", vip_wait / vip_customers);
+	printf("VIP 고객 평균 대기 시간 = %.5f분 \n", (float)vip_wait / (float)vip_customers);  //각 평균 대기 시간은 소수로 소수점 5개까지 출력하도록 변경
 	printf("\n");
 	printf("일반고객 전체 대기 시간 = %d분 \n", regular_wait);
 	printf("일반고객 방문 수 = %d명 \n", regular_customers);
-	printf("일반고객 평균 대기 시간 = %d분 \n", regular_wait / regular_customers);
+	printf("일반고객 평균 대기 시간 = %.5f분 \n", (float)regular_wait / (float)regular_customers);
 	printf("\n");
 	printf("전체고객 전체 대기 시간 = %d분 \n", total_wait);
 	printf("전체고객 방문 수 = %d명 \n", total_customers);
-	printf("전체고객 평균 대기 시간 = %d분 \n", total_wait / total_customers);
+	printf("전체고객 평균 대기 시간 = %.5f분 \n", (float)total_wait / (float)total_customers);
 	return 0;
 }
